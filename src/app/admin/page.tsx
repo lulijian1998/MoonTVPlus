@@ -18973,6 +18973,7 @@ const WebLiveConfig = ({
               className='px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
             >
               <option value='huya'>虎牙</option>
+              <option value='douyu'>斗鱼</option>
               <option value='bilibili'>哔哩哔哩</option>
               <option value='douyin'>抖音</option>
             </select>
@@ -19053,6 +19054,7 @@ const WebLiveConfig = ({
                 className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
               >
                 <option value='huya'>虎牙</option>
+                <option value='douyu'>斗鱼</option>
                 <option value='bilibili'>哔哩哔哩</option>
                 <option value='douyin'>抖音</option>
               </select>
@@ -19133,6 +19135,8 @@ const WebLiveConfig = ({
                   <div className='sm:hidden text-xs text-gray-500 dark:text-gray-400 mt-1'>
                     {source.platform === 'huya'
                       ? '虎牙'
+                      : source.platform === 'douyu'
+                      ? '斗鱼'
                       : source.platform === 'bilibili'
                       ? '哔哩哔哩'
                       : source.platform === 'douyin'
@@ -19144,6 +19148,8 @@ const WebLiveConfig = ({
                 <td className='hidden sm:table-cell px-6 py-4 text-sm text-gray-900 dark:text-gray-100'>
                   {source.platform === 'huya'
                     ? '虎牙'
+                    : source.platform === 'douyu'
+                    ? '斗鱼'
                     : source.platform === 'bilibili'
                     ? '哔哩哔哩'
                     : source.platform === 'douyin'

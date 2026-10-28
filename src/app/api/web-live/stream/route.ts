@@ -206,6 +206,59 @@ async function getDouyinStream(roomId: string) {
   };
 }
 
+async function getDouyuStream(roomId: string) {
+  let ownerName = '';
+  let title = '';
+  try {
+    const betardRes = await fetch(`https://www.douyu.com/betard/${roomId}`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    });
+    const betardData = await betardRes.json();
+    ownerName = betardData.room?.nickname || '';
+    title = betardData.room?.room_name || '';
+  } catch (e) {
+    console.warn('获取斗鱼房间信息失败:', e);
+  }
+
+  const did = '10000000000000000000000000001501';
+  const t13 = Date.now().toString();
+  const auth = crypto.createHash('md5').update(roomId + t13).digest('hex');
+
+  const headers = {
+    'rid': roomId,
+    'time': t13,
+    'auth': auth,
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Content-Type': 'application/x-www-form-urlencoded'
+  };
+
+  const body = `rid=${roomId}&did=${did}`;
+  const streamRes = await fetch(`https://playweb.douyucdn.cn/lapi/live/hlsH5Preview/${roomId}`, {
+    method: 'POST',
+    headers,
+    body
+  });
+  const streamData = await streamRes.json();
+
+  if (streamData.error !== 0 || !streamData.data) {
+    if (streamData.error === 104) {
+      throw new Error('直播间未开播');
+    }
+    throw new Error(streamData.msg || '获取斗鱼直播流失败');
+  }
+
+  const { rtmp_url, rtmp_live } = streamData.data;
+  const m3u8Url = `${rtmp_url}/${rtmp_live}`;
+
+  return {
+    url: m3u8Url,
+    name: ownerName,
+    title: title
+  };
+}
+
 export async function GET(request: NextRequest) {
   try {
     const authResult = await requireFeaturePermission(request, 'web_live', '无权限访问网络直播');
@@ -266,6 +319,18 @@ export async function GET(request: NextRequest) {
 
     if (platform === 'douyin') {
       const streamData = await getDouyinStream(roomId);
+      const proxyUrl = `/api/web-live/proxy/proxy.m3u8?url=${encodeURIComponent(streamData.url)}`;
+
+      return NextResponse.json({
+        url: proxyUrl,
+        originalUrl: streamData.url,
+        name: streamData.name,
+        title: streamData.title
+      });
+    }
+
+    if (platform === 'douyu') {
+      const streamData = await getDouyuStream(roomId);
       const proxyUrl = `/api/web-live/proxy/proxy.m3u8?url=${encodeURIComponent(streamData.url)}`;
 
       return NextResponse.json({
